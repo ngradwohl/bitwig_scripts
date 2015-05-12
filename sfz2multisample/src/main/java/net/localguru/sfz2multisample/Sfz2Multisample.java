@@ -10,11 +10,11 @@ public class Sfz2Multisample {
         Sfz2Multisample main = new Sfz2Multisample();
 
         String sfz_name = args[0];
-        String multi_name =  sfz_name.replace("sfz", "mutisample");
+        String multi_name =  sfz_name.replace("sfz", "multisample");
         String sfz = main.loadSfz( sfz_name );
         System.out.println( sfz_name );
 
-        //System.out.println( sfz );
+//        System.out.println( sfz );
 
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
             "<multisample name=\""+sfz_name+"\">\n" +
@@ -30,6 +30,7 @@ public class Sfz2Multisample {
         for ( String region : regions ) {
             System.out.println( region );
             if (region.trim().startsWith( "<group>")) continue;
+            if (region.trim().equals("")) continue;
             String[] tmp =  region.trim().split(" ");
             Map<String,String> attributes = new HashMap<String,String>();
             String sample = "" ;
@@ -82,6 +83,7 @@ public class Sfz2Multisample {
         
             ZipOutputStream result = new ZipOutputStream( new BufferedOutputStream( new FileOutputStream( multi_name )));
             for ( String name: sampleNames ) {
+                try { 
                 BufferedInputStream fis = new BufferedInputStream( new FileInputStream( name ), 4096);
                 String[] parts = name.split("/");
                 System.out.println(name); 
@@ -92,6 +94,9 @@ public class Sfz2Multisample {
                     result.write( data,0,count);
                 }
                 fis.close();
+                } catch ( Exception e ) {
+                    e.printStackTrace();
+                }
             }
 
             result.putNextEntry( new ZipEntry( "multisample.xml"));
