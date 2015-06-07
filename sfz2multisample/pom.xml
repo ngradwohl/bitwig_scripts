@@ -4,7 +4,7 @@
   <groupId>net.localguru.sfz2multisample</groupId>
   <artifactId>Sfz2Multisample</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.2-SNAPSHOT</version>
   <name>Sfz2Multsample</name>
   <repositories>
     <repository>
