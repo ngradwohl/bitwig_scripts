@@ -2,6 +2,7 @@ package net.localguru.sfz2multisample;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
+import java.util.StringTokenizer;
 import javax.sound.sampled.*;
 import javax.sound.sampled.spi.*;
 
@@ -19,60 +20,92 @@ public class Sfz2Multisample {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
             "<multisample name=\""+sfz_name+"\">\n" +
             "    <generator>Bitwig Studio</generator>\n" +
-            "    <category>Organ</category>\n"+
-            "    <creator>guru</creator>\n"+
+            "    <category></category>\n"+
+            "    <creator>SFZ2Multisample</creator>\n"+
             "    <description/>\n"+
             "    <keywords/>\n"+
             "  <layer name=\"Default\">\n";
 
-        String[] regions = sfz.split( "<region>");
+        //String[] regions = sfz.split( "<region>");
+
+        StringTokenizer tok = new StringTokenizer( sfz, "<[^>]*>" );
         List<String> sampleNames = new ArrayList<String>();
-        for ( String region : regions ) {
-            System.out.println( region );
-            if (region.trim().startsWith( "<group>")) continue;
-            if (region.trim().equals("")) continue;
-            String[] tmp =  region.trim().split(" ");
+        String default_path="";
+
+       // for ( String region : regions ) {
+          String mode = "";
+          while ( tok.hasMoreTokens()) {
+            String res = tok.nextToken();
+            if ( "region".equals( res ) || "group".equals( res ) || "control".equals( res )) {
+                mode = res;
+                continue;
+            }
+            //if (region.trim().startsWith( "<group>")) continue;
+            //if (region.trim().startsWith( "<control>")) continue;
+
+            //if (region.trim().equals("")) continue;
+
+            String[] tmp =  res.trim().split(" ");
             Map<String,String> attributes = new HashMap<String,String>();
             String sample = "" ;
             boolean s =false;
+            String key = "";
             for ( String t : tmp ) {
+                if ( t.indexOf("=") == -1 ) {
                 if ( s ) {
                     sample += t + " ";
                     continue;
                 } 
+                }
                 System.out.println( "T: " + t );
                 String[] data = t.split("=");
                 if (data[0].trim().equals("")) continue;
-                if (!data[0].trim().equals( "sample")) {
+                key = data[0]; 
+                if (!data[0].trim().equals( "sample") && !data[0].trim().equals("default_path")) {
                     attributes.put(data[0].trim(), data[1].trim());
                 } else { 
                     sample = data[1].trim() + " ";
                     s = true;
                 }
             }
-            sample = sample.trim().replace("\\","/");
-
-            attributes.put( "sample", sample);
-            sampleNames.add( sample);
-            float end = 1000F;
-            try {
-                System.out.println( "Sample: " + attributes.get("sample"));
-                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(sample));
-                long len = audioInputStream.getFrameLength();
-                AudioFormat format = audioInputStream.getFormat();
-                float fr = format.getFrameRate();
-                end = len;
-
-            } catch ( Exception e ) {
-                e.printStackTrace();
+            if ( "default_path".equals( key )) {
+                default_path = sample.trim();
+                System.out.println( "DP: " + default_path ); 
             }
-            String[] parts = sample.split("/");
+            if ( default_path != null && !"".equals( default_path )) {
+                sample = default_path + sample;
+            }
+            sample = sample.trim().replace("\\","/");
+            if ( "sample".equals(key)) {
+                attributes.put( "sample", sample);
+                sampleNames.add( sample);
+            }
 
-            xml+="<sample file=\""+parts[ parts.length-1].trim()+"\" gain=\"0.000\" sample-start=\"0.000\" sample-stop=\""+end+"\" tune=\"0.0\">\n";
-            xml+="<key high=\""+attributes.get("hikey")+"\" low=\""+attributes.get("lokey")+"\" root=\""+attributes.get("pitch_keycenter")+"\" track=\"true\"/>\n";
-            xml+="<velocity/>\n"; 
-            xml+="<loop/>\n";
-            xml+="</sample>\n";
+            if ( mode.equals( "region" )) {
+                float end = 1000F;
+                try {
+                    System.out.println( "Sample: " + attributes.get("sample"));
+                    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(sample));
+                    long len = audioInputStream.getFrameLength();
+                    AudioFormat format = audioInputStream.getFormat();
+                    float fr = format.getFrameRate();
+                    end = len;
+
+                } catch ( Exception e ) {
+                    e.printStackTrace();
+                }
+                String[] parts = sample.split("/");
+
+                xml+="<sample file=\""+parts[ parts.length-1].trim()+"\" gain=\"0.000\" sample-start=\"0.000\" sample-stop=\""+end+"\" tune=\"0.0\">\n";
+                xml+="<key high=\""+attributes.get("hikey")+"\" low=\""+attributes.get("lokey")+"\" root=\""+attributes.get("pitch_keycenter")+"\" track=\"true\"/>\n";
+                xml+="<velocity/>\n"; 
+                xml+="<loop/>\n";
+                xml+="</sample>\n";
+            }
+
+//            if ( mode.equals( "control" )) {
+//                default_path = attributes.get("default_path");
+//            }
 
 
         }
@@ -122,8 +155,11 @@ public class Sfz2Multisample {
             String l = null;
             while ((l = reader.readLine()) != null ) {
                 String content[] = l.split("//");
-                b.append(content[0]);
-                b.append(" ");
+                if ( content.length > 0 ) {
+                    System.out.println( content[0] );
+                    b.append(content[0]);
+                    b.append(" ");
+                }
             }
             reader.close();
         } catch ( IOException ioe ) {
