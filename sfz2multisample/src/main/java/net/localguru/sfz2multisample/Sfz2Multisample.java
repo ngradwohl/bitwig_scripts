@@ -82,6 +82,10 @@ public class Sfz2Multisample {
             }
 
             if ( mode.equals( "region" )) {
+                if ( attributes.get("sample") == null ) {
+                    attributes.put( "sample", sample);
+                    sampleNames.add( sample);
+                }
                 float end = 1000F;
                 try {
                     System.out.println( "Sample: " + attributes.get("sample"));
