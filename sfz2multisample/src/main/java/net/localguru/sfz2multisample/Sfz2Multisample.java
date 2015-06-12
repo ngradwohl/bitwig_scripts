@@ -19,12 +19,12 @@ public class Sfz2Multisample {
 
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
             "<multisample name=\""+sfz_name+"\">\n" +
-            "    <generator>Bitwig Studio</generator>\n" +
-            "    <category></category>\n"+
-            "    <creator>SFZ2Multisample</creator>\n"+
-            "    <description/>\n"+
-            "    <keywords/>\n"+
-            "  <layer name=\"Default\">\n";
+            "<generator>Bitwig Studio</generator>\n" +
+            "<category></category>\n"+
+            "<creator>SFZ2Multisample</creator>\n"+
+            "<description/>\n"+
+            "<keywords/>\n"+
+            "<layer name=\"Default\">\n";
 
         //String[] regions = sfz.split( "<region>");
 
@@ -79,6 +79,14 @@ public class Sfz2Multisample {
             if ( "sample".equals(key)) {
                 attributes.put( "sample", sample);
                 sampleNames.add( sample);
+            }
+        
+            if ( attributes.get("key") != null ) {
+                String k = attributes.get("key");
+                attributes.put("hikey", k);
+                attributes.put("lokey", k);
+                attributes.put("pitch_keycenter", k);
+
             }
 
             if ( mode.equals( "region" )) {
