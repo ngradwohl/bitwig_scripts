@@ -26,13 +26,10 @@ public class Sfz2Multisample {
             "<keywords/>\n"+
             "<layer name=\"Default\">\n";
 
-        //String[] regions = sfz.split( "<region>");
-
         StringTokenizer tok = new StringTokenizer( sfz, "<[^>]*>" );
         List<String> sampleNames = new ArrayList<String>();
         String default_path="";
 
-       // for ( String region : regions ) {
           String mode = "";
           while ( tok.hasMoreTokens()) {
             String res = tok.nextToken();
@@ -40,24 +37,17 @@ public class Sfz2Multisample {
                 mode = res;
                 continue;
             }
-            //if (region.trim().startsWith( "<group>")) continue;
-            //if (region.trim().startsWith( "<control>")) continue;
-
-            //if (region.trim().equals("")) continue;
-
             String[] tmp =  res.trim().split(" ");
             Map<String,String> attributes = new HashMap<String,String>();
             String sample = "" ;
             boolean s =false;
             String key = "";
             for ( String t : tmp ) {
-                if ( t.indexOf("=") == -1 ) {
-                if ( s ) {
+                if ( t.indexOf("=") == -1  && s ) {
                     sample += t + " ";
                     continue;
-                } 
                 }
-                System.out.println( "T: " + t );
+//                System.out.println( "T: " + t );
                 String[] data = t.split("=");
                 if (data[0].trim().equals("")) continue;
                 key = data[0]; 
@@ -114,31 +104,30 @@ public class Sfz2Multisample {
                 xml+="<loop/>\n";
                 xml+="</sample>\n";
             }
-
-//            if ( mode.equals( "control" )) {
-//                default_path = attributes.get("default_path");
-//            }
-
-
         }
         xml+="</layer>\n";
         xml+="</multisample>\n";
 
+        List<String> sampleNamesSeen = new ArrayList<String>();
+
         try {
-        
             ZipOutputStream result = new ZipOutputStream( new BufferedOutputStream( new FileOutputStream( multi_name )));
             for ( String name: sampleNames ) {
-                try { 
-                BufferedInputStream fis = new BufferedInputStream( new FileInputStream( name ), 4096);
-                String[] parts = name.split("/");
-                System.out.println(name); 
-                result.putNextEntry( new ZipEntry( parts[ parts.length-1]));
-                int count = 0;
-                byte[] data = new byte[4096];
-                while((count=fis.read( data, 0, 4096 )) != -1 ) {
-                    result.write( data,0,count);
+                if ( sampleNamesSeen.contains( name )) { 
+                    continue;
                 }
-                fis.close();
+                sampleNamesSeen.add( name );
+                try { 
+                    BufferedInputStream fis = new BufferedInputStream( new FileInputStream( name ), 4096);
+                    String[] parts = name.split("/");
+                    System.out.println(name); 
+                    result.putNextEntry( new ZipEntry( parts[ parts.length-1]));
+                    int count = 0;
+                    byte[] data = new byte[4096];
+                    while((count=fis.read( data, 0, 4096 )) != -1 ) {
+                        result.write( data,0,count);
+                    }
+                    fis.close();
                 } catch ( Exception e ) {
                     e.printStackTrace();
                 }
