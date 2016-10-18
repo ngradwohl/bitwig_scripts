@@ -60,7 +60,7 @@ function init() {
    })
 
    for( var i=0; i<8; i++) {
-       primaryDevice.getMacro( i ).addLabelObserver( 24, "Maxro "+i, getMacroNameObserver(i))                
+       primaryDevice.getMacro( i ).addLabelObserver( 24, "Macro "+i, getMacroNameObserver(i))                
        primaryDevice.getMacro( i ).getAmount().addValueObserver(100,getValueObserver( i ));
        primaryDevice.getMacro( i ).getModulationSource().addIsMappedObserver( getMacroIsMappedObserver( i ));
    }
