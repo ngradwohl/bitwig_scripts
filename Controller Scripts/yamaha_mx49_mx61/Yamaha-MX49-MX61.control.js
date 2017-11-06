@@ -1,5 +1,5 @@
 
-loadAPI(1);
+loadAPI(2);
 
 host.defineController("Yamaha", "MX49/MX61", "1.0", "fadd4e99-a961-4237-9c97-478321ea072e")
 host.defineMidiPorts(5, 5);
@@ -31,6 +31,8 @@ function init() {
    out4 = host.getMidiOutPort(3)
    out5 = host.getMidiOutPort(4)
 
+   trackBank = host.createTrackBank(64,1,1);
+
    generic.setShouldConsumeEvents(false);
 
    out5.sendSysex("F0 43 10 7F 17 01 20 00 00 F7")
@@ -48,10 +50,12 @@ function init() {
    transport = host.createTransportSection();
    application = host.createApplication();
 
-   cursorTrack = host.createCursorTrack(0, 0);
+   cursorTrack = host.createCursorTrack(1, 1);
    
    //primaryDevice = cursorTrack.getPrimaryDevice();
    primaryDevice = cursorTrack.createCursorDevice()
+   primaryDevice.exists().markInterested();
+   remoteControls = primaryDevice.createCursorRemoteControlsPage(8);
 
    primaryDevice.addNameObserver( 15, "Device", function( name ) {
         sendTemplateName( name );        
@@ -60,18 +64,38 @@ function init() {
    })
 
    for( var i=0; i<8; i++) {
-       primaryDevice.getMacro( i ).addLabelObserver( 24, "Macro "+i, getMacroNameObserver(i))                
-       primaryDevice.getMacro( i ).getAmount().addValueObserver(100,getValueObserver( i ));
-       primaryDevice.getMacro( i ).getModulationSource().addIsMappedObserver( getMacroIsMappedObserver( i ));
+       remoteControls.getParameter( i ).name().addValueObserver(getMacroNameObserver(i))                
+       remoteControls.getParameter( i ).value().addValueObserver(100,getValueObserver( i ));
    }
+   primaryDevice.getChannel().getVolume().addValueObserver(100,getValueObserver(8));
+   primaryDevice.getChannel().getPan().addValueObserver(100,getValueObserver(9));
+
+    browser  = host.createPopupBrowser();
+    resultColumn = browser.resultsColumn();
+    cursorResult = resultColumn.createCursorItem();
+    cursorResult.addValueObserver(100, "", getSelectedNameObserver() );
+    cursorResultBank = resultColumn.createItemBank(1000);
+
+    for (var i=0; i<cursorResultBank.getSize(); i++) {
+        item = cursorResultBank.getItem(i)
+        item.name().markInterested()
+    }
 }
 
-macromapped = [ true, true, true, true, true, true, true ,true ];
-macrovalue = [0,0,0,0,0,0,0,0]
+macromapped = [ true, true, true, true, true, true, true ,true, true, true, true, true, true ];
+macrovalue = [0,0,0,0,0,0,0,0,0,0,0,0]
+selectedName = [""]
 function getMacroIsMappedObserver( i ) {
     return function( mapped ) {
         macromapped[i] = mapped;
         sendValue(i,macrovalue[i],mapped);
+    }
+}
+
+function getSelectedNameObserver() {
+    return function( name ) {
+        println( name );
+        selectedName[0] = name
     }
 }
 
@@ -142,15 +166,20 @@ function onMidi1(status, data1, data2) {
         sendValue(idx, Math.round(100*data2/127), idx >= 8 || macromapped[idx]);
 
         if ( idx < 8 ) {
-            primaryDevice.getMacro( idx ).getAmount().set(data2, 128);
+            remoteControls.getParameter( idx ).value().set(data2, 128);
+
         } else if ( idx == 8 ) {
             primaryDevice.getChannel().getVolume().set( data2, 128 );
         } else if ( idx == 9 ) {
             primaryDevice.getChannel().getPan().set( data2, 128 );
         } else if ( idx == 10) {
-            primaryDevice.getChannel().getSend(0).set( data2, 128 );
+            if ( primaryDevice.getChannel().getSend(0) != null ) {
+                primaryDevice.getChannel().getSend(0).set( data2, 128 );
+            }
         } else if ( idx == 11 ) {
+           if ( primaryDevice.getChannel().getSend(1) != null ) {
             primaryDevice.getChannel().getSend(1).set( data2, 128 );
+            }
         }
     } 
     if (status == 144) {
@@ -158,25 +187,69 @@ function onMidi1(status, data1, data2) {
             transport.stop();
         } else if ( data1 == 94 && data2 == 127 ) {
             transport.play();
+
         } else if ( data1 == 118 && data2 == 127 ) {
+            application.createAudioTrack(0);
+
+        } else if ( data1 == 60 && data2 == 127 ) {
+        } else if ( data1 == 61 && data2 == 127 ) {
+        } else if ( data1 == 62 && data2 == 127 ) {
+        } else if ( data1 == 63 && data2 == 127 ) {
+        } else if ( data1 == 64 && data2 == 127 ) {
+        } else if ( data1 == 65 && data2 == 127 ) {
+
+
+        } else if ( data1 == 118 && data2 == 127 ) {
+            application.createAudioTrack(0);
         } else if ( data1 == 119 && data2 == 127 ) {
-        } else if ( data1 == 54 && data2 == 127 ) {
             application.createInstrumentTrack(0);
-            cursorTrack.selectFirst();
-            application.getAction("show_insert_popup_browser").invoke();
+        } else if ( data1 == 54 && data2 == 127 ) {
+            createSpecialTrack("HW Instrument");
         } else if ( data1 == 55 && data2 == 127 ) {
-            browser = primaryDevice.createDeviceBrowser(0,0);
-            browser.startBrowsing()
+            createSpecialTrack("ACE.64");   
         } else if ( data1 == 56 && data2 == 127 ) {
+            createSpecialTrack("Repro-1.64");
         } else if ( data1 == 57 && data2 == 127 ) {
+            createSpecialTrack("Polysynth");
         } else if ( data1 == 58 && data2 == 127 ) {
+            createSpecialTrack("Drum Machine");
         } else if ( data1 == 59 && data2 == 127 ) {
+            if (primaryDevice.exists().get()) {
+                println("replace");
+                primaryDevice.browseToReplaceDevice();
+            } else {
+                println("startchain");
+                cursorTrack.browseToInsertAtStartOfChain();
+            }
+
         }
 //        generic.sendRawMidiEvent( status, data1, data2 );
     }
 }
 
+function createSpecialTrack(pluginName) {
+            application.createInstrumentTrack(0);
+            
+            host.scheduleTask( function() {
+                trackBank.scrollToChannel(0);
+                trackBank.getChannel(0).browseToInsertAtStartOfChain();
+                application.arrowKeyDown();
+                host.scheduleTask( function() {
+                    for (var i=0; i<cursorResultBank.getSize(); i++) {
+                        item = cursorResultBank.getItem(i)
+                        item.isSelected().set(true);
+                        name = item.name().getValue();
+                        println( "Sel " + i + " -> " +item.name().getValue());
+                        if (name == pluginName) break;
+                    }
+                    browser.commit();
+                    t = trackBank.getChannel(0);
+                    t.selectInMixer(); 
 
+                }, 300); 
+            }, 100);
+
+}
 function exit()
 {
 }
