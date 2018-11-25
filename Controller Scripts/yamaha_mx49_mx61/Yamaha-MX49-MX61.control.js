@@ -1,6 +1,37 @@
 
 loadAPI(2);
 
+const RGB_COLORS =
+[
+    [ 0.3294117748737335 , 0.3294117748737335 , 0.3294117748737335 , "Dark Gray"],
+    [ 0.47843137383461   , 0.47843137383461   , 0.47843137383461   , "Gray"],
+    [ 0.7882353067398071 , 0.7882353067398071 , 0.7882353067398071 , "Light Gray"],
+    [ 0.5254902243614197 , 0.5372549295425415 , 0.6745098233222961 , "Silver"],
+    [ 0.6392157077789307 , 0.4745098054409027 , 0.26274511218070984, "Dark Brown"],
+    [ 0.7764706015586853 , 0.6235294342041016 , 0.43921568989753723, "Brown"],
+    [ 0.34117648005485535, 0.3803921639919281 , 0.7764706015586853 , "Dark Blue"],
+    [ 0.5176470875740051 , 0.5411764979362488 , 0.8784313797950745 , "Purplish Blue"],
+    [ 0.5843137502670288 , 0.2862745225429535 , 0.7960784435272217 , "Purple"],
+    [ 0.8509804010391235 , 0.21960784494876862, 0.4431372582912445 , "Pink"],
+    [ 0.8509804010391235 , 0.18039216101169586, 0.1411764770746231 , "Red"],
+    [ 1                  , 0.34117648005485535, 0.0235294122248888 , "Orange"],
+    [ 0.8509804010391235 , 0.615686297416687  , 0.062745101749897  , "Light Orange"],
+    [ 0.45098039507865906, 0.5960784554481506 , 0.0784313753247261 , "Green"],
+    [ 0                  , 0.615686297416687  , 0.27843138575553894, "Cold Green"],
+    [ 0                  , 0.6509804129600525 , 0.5803921818733215 , "Bluish Green"],
+    [ 0                  , 0.6000000238418579 , 0.8509804010391235 , "Blue"],
+    [ 0.7372549176216125 , 0.4627451002597809 , 0.9411764740943909 , "Light Purple"],
+    [ 0.8823529481887817 , 0.4000000059604645 , 0.5686274766921997 , "Light Pink"],
+    [ 0.9254902005195618 , 0.3803921639919281 , 0.34117648005485535, "Skin"],
+    [ 1                  , 0.5137255191802979 , 0.24313725531101227, "Redish Brown"],
+    [ 0.8941176533699036 , 0.7176470756530762 , 0.30588236451148987, "Light Brown"],
+    [ 0.6274510025978088 , 0.7529411911964417 , 0.2980392277240753 , "Light Green"],
+    [ 0.24313725531101227, 0.7333333492279053 , 0.3843137323856354 , "Grass Green"],
+    [ 0.26274511218070984, 0.8235294222831726 , 0.7254902124404907 , "Light Blue"],
+    [ 0.2666666805744171 , 0.7843137383460999 , 1                  , "Greenish Blue"],
+];
+
+
 host.defineController("Yamaha", "MX49/MX61", "1.0", "fadd4e99-a961-4237-9c97-478321ea072e")
 host.defineMidiPorts(5, 5);
 host.addDeviceNameBasedDiscoveryPair(
@@ -188,21 +219,40 @@ function onMidi1(status, data1, data2) {
         } else if ( data1 == 94 && data2 == 127 ) {
             transport.play();
 
-        } else if ( data1 == 118 && data2 == 127 ) {
-            application.createAudioTrack(0);
-
         } else if ( data1 == 60 && data2 == 127 ) {
+            setTrackColor(10);
         } else if ( data1 == 61 && data2 == 127 ) {
+            setTrackColor(11);
+
         } else if ( data1 == 62 && data2 == 127 ) {
+            setTrackColor(13);
+
         } else if ( data1 == 63 && data2 == 127 ) {
+            setTrackColor(23);
+
         } else if ( data1 == 64 && data2 == 127 ) {
+            setTrackColor(6);
+
         } else if ( data1 == 65 && data2 == 127 ) {
+            setTrackColor(16);
 
 
         } else if ( data1 == 118 && data2 == 127 ) {
             application.createAudioTrack(0);
+            host.scheduleTask( function() {
+                trackBank.scrollToChannel(0);
+                c = RGB_COLORS[Math.floor(Math.random()*RGB_COLORS.length)]
+                trackBank.getChannel(0).color().set(c[0], c[1], c[2])
+            },100);
+
         } else if ( data1 == 119 && data2 == 127 ) {
             application.createInstrumentTrack(0);
+            host.scheduleTask( function() {
+                trackBank.scrollToChannel(0);
+                c = RGB_COLORS[Math.floor(Math.random()*RGB_COLORS.length)]
+                trackBank.getChannel(0).color().set(c[0], c[1], c[2])
+            },100);
+
         } else if ( data1 == 54 && data2 == 127 ) {
             createSpecialTrack("HW Instrument");
         } else if ( data1 == 55 && data2 == 127 ) {
@@ -215,10 +265,8 @@ function onMidi1(status, data1, data2) {
             createSpecialTrack("Drum Machine");
         } else if ( data1 == 59 && data2 == 127 ) {
             if (primaryDevice.exists().get()) {
-                println("replace");
                 primaryDevice.browseToReplaceDevice();
             } else {
-                println("startchain");
                 cursorTrack.browseToInsertAtStartOfChain();
             }
 
@@ -232,6 +280,8 @@ function createSpecialTrack(pluginName) {
             
             host.scheduleTask( function() {
                 trackBank.scrollToChannel(0);
+                c = RGB_COLORS[Math.floor(Math.random()*RGB_COLORS.length)]
+                trackBank.getChannel(0).color().set(c[0], c[1], c[2])
                 trackBank.getChannel(0).browseToInsertAtStartOfChain();
                 application.arrowKeyDown();
                 host.scheduleTask( function() {
@@ -250,6 +300,12 @@ function createSpecialTrack(pluginName) {
             }, 100);
 
 }
+
+function setTrackColor(color) {
+    c = RGB_COLORS[color]
+    cursorTrack.color().set(c[0], c[1], c[2])
+}
+
 function exit()
 {
 }
