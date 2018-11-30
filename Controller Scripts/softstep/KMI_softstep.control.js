@@ -191,24 +191,24 @@ function onMidi(status, data1, data2) {
             if ( status == 176 && data1 == buttons[b]+i && data2 >= 20 ) {
                 if ( state[b] == 0 ) {
                     state[b] = buttons[b]+i;
-                    println( "button " + b + " pressed");
+//                    println( "button " + b + " pressed");
                     change[b]=1
                 }
                 if (state_fine[4*b+i] == 0 ) {
                     state_fine[4*b+i] = 4*b+i
-                    println( "button " + b + " sub " + i + " pressed");
+//                    println( "button " + b + " sub " + i + " pressed");
                     change_fine[4*b+i] = 1;
                 }
             }
             if ( status == 176 && data1 == buttons[b]+i  && data2 < 10 ) {
                 if ( state[b] == buttons[b]+i ) {
                     state[b] = 0;
-                    println( "button " + b + " released");
+//                    println( "button " + b + " released");
                     change[b]=-1
                 }
                 if (state_fine[4*b+i] == 4*b+i) {
                     state_fine[4*b+i] = 0;
-                    println( "button " + b + " sub " + i + " released");
+//                    println( "button " + b + " sub " + i + " released");
                     change_fine[4*b+i] = -1;
                 }
             }
@@ -226,7 +226,9 @@ function onMidi(status, data1, data2) {
         if ( change[2]==-1) {
             transport.record();
         }
-        //TODO ?
+        if ( change[3]==-1) {
+            transport.tapTempo();
+        }
         if (change[4] == -1) {
             if (primaryDevice.exists().get()) {
                 primaryDevice.browseToReplaceDevice();
