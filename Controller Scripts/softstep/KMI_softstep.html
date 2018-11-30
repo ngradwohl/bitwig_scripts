@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>KMI Softstep2</title>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Language" content="en-us"/>
+    <meta http-equiv="imagetoolbar" content="no"/>
+    <meta name="MSSmartTagsPreventParsing" content="true"/>
+    <meta name="description" content="Using the KMI Softstep2 control-script in Bitwig Studio"/>
+    <meta name="keywords" content="bitwig studio kmi softstep2"/>
+    <meta name="author" content="Nikolaus Gradwohl"/>
+</head>
+<style>
+    .page { width: 500px; }
+</style>
+
+<body>
+<div id="page-container">
+    <div id="header">
+        <div id="title">
+            <h1>KMI SoftStep2</h1>
+        </div>
+    </div>
+    <div class="content">
+        <div class="page">
+            <h2>Global</h2>
+            <div id="global-1">
+                <p>
+                The controller script for the Softstep 2 uses several pages which can be cycled throu using the left and right navigation buttons 
+                </p>
+                <p>
+                the name of the current page is shown on the display and when switching between pages its also shown on the screen, so you 
+                don't have to look down to your controller panel when switching pages.
+                </p>
+            </div>
+        </div>
+        <div class="page">
+            <h2>Transport Mode</h2>
+            <div id="trans-1">
+                <div id="illustration">
+                    <img src="tran_page.png" height="207" alt="LaunchPad" border="0"/>
+                </div>
+                <p>
+                In this mode the buttons can be used to start and stop the current project, activate loop mode and toggle various recording modes. 
+                You can also start the device/clip/sample/preset-browser or tap your tempo. 
+                </p>
+            </div>
+        </div>
+
+        <div class="page">
+            <h2>Parameter Mode</h2>
+
+            <div id="param-1">
+                <div id="illustration">
+                    <img src="prm_page.png" height="207" alt="LaunchPad" border="0"/>
+                </div>
+
+                <p>in parameter mode you can change values of the currently selected device by usin the arrow keys on your softstep 2. Each softstep 
+                button is mapped to one parameter, the up and down key of the button can be used to increase or decrease the values by 10 and the 
+                left and right buttons can be used to increase and decrease the value by 1 - this is usefull if a parameter is mapped to a descret 
+                value like a program change on a hardware synth for example</p>
+                <p>The button number 5 can be used to switch between parameter banks on the selected devcie and button 0 is used to navigate between 
+                devices in the currently selected channel.</p> 
+            </div>
+        </div>
+        <div class="page">
+            <h2>Controller Mode</h2>
+            <div id="ctrl-1">
+                <div id="illustration">
+                    <img src="ctrl_page.png" height="207" alt="LaunchPad" border="0"/>
+                </div>
+
+                <p>In controller mode the pressure value of each button is mapped to a usercontroller that can be mapped to any controllable parameter 
+                you like using the midi-learn function</p>
+            </div>
+        </div>
+        <div class="page">
+            <h2>Clip Launch Mode</h2>
+            <div id="clip-1">
+                <div id="illustration">
+                    <img src="clip_page.png" height="207" alt="LaunchPad" border="0"/>
+                </div>
+
+                <p>in clip launcher mode, the first 9 buttons trigger start, stop or record on the first 9 clips of the selected track - the leds are 
+                lit green if a slot contains a clip. If you hit a empty clip recording starts on this slot (and the led turns red). Botton 0 is used 
+                to select a track in the mixer.</p>
+            </div>
+        </div>
+    </div>
+    <div id="footer">
+        Version Nr: 1.0 | Made by: Nikolaus Gradwohl | Contact: <a
+            href="mailto:guru@local-guru.net">guru@local-guru.net</a>, <a href="https://www.local-guru.net/">www.local-guru.net</a>
+    </div>
+</div>
+</body>
+</html>
+
+
+
+
